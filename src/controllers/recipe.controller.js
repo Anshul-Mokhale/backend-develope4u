@@ -6,18 +6,18 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 const createPost = asyncHandler(async (req, res) => {
-    const { title, description, ingredient, steps, category } = req.body;
+    const { title, description, ingredient, steps, category, userId } = req.body;
 
     if (
-        [title, description, ingredient, steps, category].some((field) => field?.trim() === "")
+        [title, description, ingredient, steps, category, userId].some((field) => field?.trim() === "")
     ) {
         throw new ApiError(400, "All fields are required");
     }
 
-    const user = await User.findById(req.user?._id);
-    if (!user) {
-        throw new ApiError(404, "User not found");
-    }
+    // const user = await User.findById(req.user?._id);
+    // if (!user) {
+    //     throw new ApiError(404, "User not found");
+    // }
 
     const recipeImagePath = req.file?.path;
 
@@ -37,7 +37,7 @@ const createPost = asyncHandler(async (req, res) => {
         description,
         ingredient,
         steps,
-        userId: user._id, // Assign the user's ID to userId
+        userId,
         category
     });
 
@@ -133,5 +133,7 @@ const updateDetails = asyncHandler(async (req, res) => {
     }
 
 });
+
+
 
 export { createPost, updateImage, updateDetails };
