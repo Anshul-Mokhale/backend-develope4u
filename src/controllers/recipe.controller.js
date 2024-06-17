@@ -164,7 +164,26 @@ const getUserPost = asyncHandler(async (req, res) => {
     }
 });
 
+const viewRecipe = asyncHandler(async (req, res) => {
+    const recipeId = req.body;
+
+    if (!recipeId) {
+        throw new ApiError(400, "Recipe Id not Found");
+    }
+
+    try {
+        const recipe = await Recipe.findById({ recipeId });
+
+        return res.status(200).json(
+            new ApiResponse(200, recipe, "recipe data fetched successfully")
+        )
+    }
+    catch (error) {
+        throw new ApiError(500, "Error fetching data");
+    }
+})
 
 
 
-export { createPost, updateImage, updateDetails, getAllPost, getUserPost };
+
+export { createPost, updateImage, updateDetails, getAllPost, getUserPost, viewRecipe };
