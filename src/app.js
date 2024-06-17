@@ -8,7 +8,7 @@ import cookieParser from "cookie-parser";
 const app = express();
 
 const corsOptions = {
-    origin: process.env.CORS_ORIGIN || "http://mamta-medical.netlify.app",
+    origin: process.env.CORS_ORIGIN || "http://cook-up.netlify.app",
     credentials: true
 };
 
