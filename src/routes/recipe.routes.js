@@ -1,6 +1,6 @@
 import { Router, response } from 'express';
 
-import { createPost, updateImage, updateDetails } from '../controllers/recipe.controller.js';
+import { createPost, updateImage, updateDetails, getAllPost, getUserPost } from '../controllers/recipe.controller.js';
 import { upload } from '../middlewares/multer.middlewares.js';
 
 const router = Router();
@@ -18,6 +18,13 @@ router.route('/update-image').post(
 )
 router.route('/update-details').post(
     updateDetails
+)
+router.route('/get-all-recipes').get(
+    getAllPost
+)
+
+router.route('/get-user-post').post(
+    getUserPost
 )
 
 export default router;

@@ -135,5 +135,36 @@ const updateDetails = asyncHandler(async (req, res) => {
 });
 
 
+const getAllPost = asyncHandler(async (req, res) => {
+    try {
+        const recipes = await Recipe.find();
+        return res.status(200).json(
+            new ApiResponse(200, recipes, "Recipes fetched successfully")
+        );
+    } catch (error) {
+        throw new ApiError(500, "Error fetching recipes");
+    }
+});
 
-export { createPost, updateImage, updateDetails };
+const getUserPost = asyncHandler(async (req, res) => {
+    const { userId } = req.body;
+
+    if (!userId) {
+        throw new ApiError(400, "User ID is required");
+    }
+
+    try {
+        const userRecipes = await Recipe.find({ userId });
+
+        return res.status(200).json(
+            new ApiResponse(200, userRecipes, "User recipes fetched successfully")
+        );
+    } catch (error) {
+        throw new ApiError(500, "Error fetching user recipes");
+    }
+});
+
+
+
+
+export { createPost, updateImage, updateDetails, getAllPost, getUserPost };
