@@ -8,9 +8,11 @@ const router = Router();
 
 router.route('/create-post').post(
     verifyJWT,
-    upload.single('recipeImage'), // Adjust 'profilePic' to the actual field name in the form
+    upload.single('recipeImage'),
     createPost
 );
+
+router.route('/verify').post(verifyJWT);
 
 router.route('/update-image').post(
     upload.single('updatedImage'),
