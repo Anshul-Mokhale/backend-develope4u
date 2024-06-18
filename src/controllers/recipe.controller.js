@@ -216,7 +216,6 @@ const getSavedPosts = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports = getSavedPosts;
 
 
 export { createPost, updateImage, updateDetails, getAllPost, getUserPost, viewRecipe, getSavedPosts };
