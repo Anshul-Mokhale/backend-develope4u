@@ -165,25 +165,58 @@ const getUserPost = asyncHandler(async (req, res) => {
 });
 
 const viewRecipe = asyncHandler(async (req, res) => {
-    const recipeId = req.body;
+    const { recipeId } = req.body;
 
     if (!recipeId) {
-        throw new ApiError(400, "Recipe Id not Found");
+        return res.status(400).json(
+            new ApiError(400, "Recipe Id not Found")
+        );
     }
 
     try {
-        const recipe = await Recipe.findById({ recipeId });
+        const recipe = await Recipe.findById(recipeId);
+
+        if (!recipe) {
+            return res.status(404).json(
+                new ApiError(404, "Recipe not found")
+            );
+        }
 
         return res.status(200).json(
-            new ApiResponse(200, recipe, "recipe data fetched successfully")
-        )
+            new ApiResponse(200, recipe, "Recipe data fetched successfully")
+        );
+    } catch (error) {
+        console.error("Error fetching recipe data:", error); // Log the error
+        return res.status(500).json(
+            new ApiError(500, "Error fetching data")
+        );
     }
-    catch (error) {
-        throw new ApiError(500, "Error fetching data");
+
+});
+
+
+
+const getSavedPosts = asyncHandler(async (req, res) => {
+    try {
+        // Assuming req.user.id contains the ID of the logged-in user
+        const userId = req.user._id;
+
+        // Find the user by ID and populate the savedRecipe field
+        const user = await User.findById(userId).populate('savedRecipe').exec();
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Respond with the populated saved recipes
+        res.json(user.savedRecipe);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
     }
-})
+});
+
+module.exports = getSavedPosts;
 
 
-
-
-export { createPost, updateImage, updateDetails, getAllPost, getUserPost, viewRecipe };
+export { createPost, updateImage, updateDetails, getAllPost, getUserPost, viewRecipe, getSavedPosts };
