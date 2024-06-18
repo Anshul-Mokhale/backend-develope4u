@@ -216,6 +216,43 @@ const getSavedPosts = asyncHandler(async (req, res) => {
     }
 });
 
+const saveRecipe = asyncHandler(async (req, res) => {
+    const { recipeId } = req.body;
+
+    if (!recipeId) {
+        throw new ApiError(400, "Recipe ID is required");
+    }
+
+    const userId = req.user._id;
+
+    try {
+        // Find the user by ID
+        const user = await User.findById(userId);
+
+        if (!user) {
+            throw new ApiError(404, "User not found");
+        }
+
+        // Check if the recipe is already saved
+        if (user.savedRecipe.includes(recipeId)) {
+            throw new ApiError(400, "Recipe already saved")
+
+        }
+
+        // Add the recipe to the savedRecipe array
+        user.savedRecipe.push(recipeId);
+
+        // Save the user document
+        await user.save();
+
+        return res.status(200).json(
+            new ApiResponse(200, user.savedRecipe, "Recipe saved successfully")
+        );
+    } catch (error) {
+        console.error("Error saving recipe:", error);
+        throw new ApiError(500, "Error saving recipe");
+    }
+});
 
 
-export { createPost, updateImage, updateDetails, getAllPost, getUserPost, viewRecipe, getSavedPosts };
+export { createPost, updateImage, updateDetails, getAllPost, getUserPost, viewRecipe, getSavedPosts, saveRecipe };

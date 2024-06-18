@@ -23,6 +23,8 @@ const generateAccessAndRefereshTokens = async (userId) => {
     }
 }
 
+
+
 const registerUser = asyncHandler(async (req, res) => {
 
 
