@@ -31,7 +31,7 @@ router.route('/get-user-post').post(
 router.route('/view-recipe').post(
     viewRecipe
 )
-router.route('/get-recipes').post(
+router.route('/get-saved-recipes').post(
     verifyJWT,
     getSavedPosts
 )
