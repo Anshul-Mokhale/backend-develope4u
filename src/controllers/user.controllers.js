@@ -291,6 +291,25 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
         )
 })
 
+const getUserName = asyncHandler(async (req, res) => {
+    const { userId } = req.body;
+
+    // Find user by ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+        throw new ApiError(400, "No user found");
+    }
+
+    const userName = user.name;
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, userName, "User name fetched successfully")
+        );
+});
+
 
 
 export {
@@ -302,5 +321,6 @@ export {
     getCurrentUser,
     updateAccountDetails,
     updateUserAvatar,
+    getUserName
 
 }
