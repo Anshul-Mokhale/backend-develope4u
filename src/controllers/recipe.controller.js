@@ -218,6 +218,7 @@ const getSavedPosts = asyncHandler(async (req, res) => {
 
 const saveRecipe = asyncHandler(async (req, res) => {
     const { recipeId } = req.body;
+    console.log("recieve request");
 
     if (!recipeId) {
         console.log("recipe id not found");
