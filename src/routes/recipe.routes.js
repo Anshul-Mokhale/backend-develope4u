@@ -37,7 +37,6 @@ router.route('/get-saved-recipes').post(
 )
 
 router.route('/save-recipe').post(
-    verifyJWT,
     saveRecipe
 )
 export default router;

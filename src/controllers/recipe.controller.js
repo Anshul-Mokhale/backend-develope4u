@@ -217,7 +217,7 @@ const getSavedPosts = asyncHandler(async (req, res) => {
 });
 
 const saveRecipe = asyncHandler(async (req, res) => {
-    const { recipeId } = req.body;
+    const { recipeId, userId } = req.body;
     console.log("recieve request");
 
     if (!recipeId) {
@@ -225,7 +225,7 @@ const saveRecipe = asyncHandler(async (req, res) => {
         return res.status(400).json(new ApiError(400, "Recipe ID is required"));
     }
 
-    const userId = req.user._id;
+    // const userId = req.user._id;
 
     try {
         // Find the user by ID
