@@ -220,6 +220,7 @@ const saveRecipe = asyncHandler(async (req, res) => {
     const { recipeId } = req.body;
 
     if (!recipeId) {
+        console.log("recipe id not found");
         return res.status(400).json(new ApiError(400, "Recipe ID is required"));
     }
 
@@ -230,11 +231,13 @@ const saveRecipe = asyncHandler(async (req, res) => {
         const user = await User.findById(userId);
 
         if (!user) {
+            console.log("no user found");
             return res.status(404).json(new ApiError(404, "User not found"));
         }
 
         // Check if the recipe is already saved
         if (user.savedRecipe.includes(recipeId)) {
+            console.log("Recipe is already saved");
             return res.status(400).json(new ApiError(400, "Recipe already saved"));
         }
 
@@ -243,8 +246,9 @@ const saveRecipe = asyncHandler(async (req, res) => {
 
         // Save the user document
         await user.save();
-
+        console.log("recipe saved successfully");
         return res.status(200).json(
+
             new ApiResponse(200, user.savedRecipe, "Recipe saved successfully")
         );
     } catch (error) {
