@@ -116,19 +116,19 @@ const updateDetails = asyncHandler(async (req, res) => {
 
     try {
         // Update the recipe's image URL with the new one
-        if (title) {
+        if (title != '') {
             recipe.title = title;
 
         }
 
-        if (description) {
+        if (description != '') {
             recipe.description = description;
         }
-        if (ingredient) {
+        if (ingredient != '') {
             recipe.ingredient = ingredient;
 
         }
-        if (steps) {
+        if (steps != '') {
             recipe.steps = steps;
 
         }
