@@ -98,6 +98,7 @@ const updateImage = asyncHandler(async (req, res) => {
 });
 
 
+
 const updateDetails = asyncHandler(async (req, res) => {
 
     const { title, description, ingredient, steps, recipe_id } = req.body;

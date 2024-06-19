@@ -14,6 +14,7 @@ router.route('/create-post').post(
 
 
 router.route('/update-image').post(
+    verifyJWT,
     upload.single('updatedImage'),
     updateImage
 )
