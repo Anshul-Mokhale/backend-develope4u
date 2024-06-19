@@ -298,16 +298,19 @@ const unsaveRecipe = asyncHandler(async (req, res) => {
 
 const deletePost = asyncHandler(async (req, res) => {
     const { userId, recipeId } = req.body;
+    console.log("recived request");
 
     try {
         // Check if both userId and recipeId are provided
         if (!userId || !recipeId) {
+            console.log("Both User ID and Recipe ID are required");
             throw new ApiError(400, "Both User ID and Recipe ID are required");
         }
 
         // Find the user by ID
         const user = await User.findById(userId);
         if (!user) {
+            console.log("user not found");
             throw new ApiError(404, "User not found");
         }
 
@@ -324,6 +327,7 @@ const deletePost = asyncHandler(async (req, res) => {
 
         // Delete the recipe
         await recipe.remove();
+        console.log("removerd recipe");
 
         return res.status(200).json(
             new ApiResponse(200, {}, "Recipe deleted successfully")
