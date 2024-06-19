@@ -47,7 +47,7 @@ router.route('/delete-recipe').post(
     deletePost
 )
 
-router.route('/search-recipes').post(
+router.route('/search-recipes').get(
     searchRecipes
 )
 export default router;
