@@ -1,6 +1,6 @@
 import { Router, response } from 'express';
 
-import { createPost, updateImage, updateDetails, getAllPost, getUserPost, viewRecipe, getSavedPosts, saveRecipe, unsaveRecipe, deletePost } from '../controllers/recipe.controller.js';
+import { createPost, updateImage, updateDetails, getAllPost, getUserPost, viewRecipe, getSavedPosts, saveRecipe, unsaveRecipe, deletePost, searchRecipes } from '../controllers/recipe.controller.js';
 import { upload } from '../middlewares/multer.middlewares.js';
 import { verifyJWT } from '../middlewares/auth.middlewares.js';
 
@@ -45,5 +45,9 @@ router.route('/remove-recipe').post(
 
 router.route('/delete-recipe').post(
     deletePost
+)
+
+router.route('/search-recipes').post(
+    searchRecipes
 )
 export default router;

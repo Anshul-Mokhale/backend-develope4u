@@ -340,7 +340,34 @@ const deletePost = asyncHandler(async (req, res) => {
     }
 });
 
+const searchRecipes = asyncHandler(async (req, res) => {
+    const { query } = req.query;
+
+    // Check if the query parameter is provided
+    if (!query) {
+        throw new ApiError(400, "Search query is required");
+    }
+
+    try {
+        // Search for recipes that match the provided query
+        const recipes = await Recipe.find({
+            $or: [
+                { title: { $regex: query, $options: "i" } }, // Case-insensitive title search
+                { category: { $regex: query, $options: "i" } }, // Case-insensitive category search
+            ],
+        });
+
+        // Return the search results
+        res.status(200).json({
+            status: "success",
+            message: "Recipes found successfully",
+            recipes,
+        });
+    } catch (error) {
+        // Handle errors
+        throw new ApiError(500, "Error searching for recipes");
+    }
+});
 
 
-
-export { createPost, updateImage, updateDetails, getAllPost, getUserPost, viewRecipe, getSavedPosts, saveRecipe, unsaveRecipe, deletePost };
+export { createPost, updateImage, updateDetails, getAllPost, getUserPost, viewRecipe, getSavedPosts, saveRecipe, unsaveRecipe, deletePost, searchRecipes };
