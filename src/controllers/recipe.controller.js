@@ -116,10 +116,22 @@ const updateDetails = asyncHandler(async (req, res) => {
 
     try {
         // Update the recipe's image URL with the new one
-        recipe.title = title;
-        recipe.description = description;
-        recipe.ingredient = ingredient;
-        recipe.steps = steps;
+        if (title) {
+            recipe.title = title;
+
+        }
+
+        if (description) {
+            recipe.description = description;
+        }
+        if (ingredient) {
+            recipe.ingredient = ingredient;
+
+        }
+        if (steps) {
+            recipe.steps = steps;
+
+        }
         await recipe.save();
 
         // If you have additional logic to update the table, do it here
