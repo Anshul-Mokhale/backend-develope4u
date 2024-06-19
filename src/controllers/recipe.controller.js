@@ -296,5 +296,45 @@ const unsaveRecipe = asyncHandler(async (req, res) => {
     }
 });
 
+const deletePost = asyncHandler(async (req, res) => {
+    const { userId, recipeId } = req.body;
 
-export { createPost, updateImage, updateDetails, getAllPost, getUserPost, viewRecipe, getSavedPosts, saveRecipe, unsaveRecipe };
+    try {
+        // Check if both userId and recipeId are provided
+        if (!userId || !recipeId) {
+            throw new ApiError(400, "Both User ID and Recipe ID are required");
+        }
+
+        // Find the user by ID
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new ApiError(404, "User not found");
+        }
+
+        // Find the recipe by ID
+        const recipe = await Recipe.findById(recipeId);
+        if (!recipe) {
+            throw new ApiError(404, "Recipe not found");
+        }
+
+        // Check if the user owns the recipe
+        if (recipe.userId.toString() !== userId.toString()) {
+            throw new ApiError(403, "User is not authorized to delete this recipe");
+        }
+
+        // Delete the recipe
+        await recipe.remove();
+
+        return res.status(200).json(
+            new ApiResponse(200, {}, "Recipe deleted successfully")
+        );
+    } catch (error) {
+        console.error("Error deleting recipe:", error);
+        return res.status(500).json(new ApiError(500, "Error deleting recipe"));
+    }
+});
+
+
+
+
+export { createPost, updateImage, updateDetails, getAllPost, getUserPost, viewRecipe, getSavedPosts, saveRecipe, unsaveRecipe, deletePost };
