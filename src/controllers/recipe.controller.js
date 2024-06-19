@@ -282,8 +282,7 @@ const unsaveRecipe = asyncHandler(async (req, res) => {
             return res.status(400).json(new ApiError(400, "Recipe is not saved"));
         }
 
-        // Remove the recipe from the savedRecipe array
-        user.savedRecipe = user.savedRecipe.filter(id => id !== recipeId);
+        user.savedRecipe = user.savedRecipe.filter(id => id.toString() !== recipeId.toString());
 
         // Save the user document
         await user.save();
