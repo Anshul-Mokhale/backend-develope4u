@@ -298,7 +298,7 @@ const unsaveRecipe = asyncHandler(async (req, res) => {
 
 const deletePost = asyncHandler(async (req, res) => {
     const { userId, recipeId } = req.body;
-    console.log("recived request");
+    console.log("Received request to delete recipe");
 
     try {
         // Check if both userId and recipeId are provided
@@ -310,24 +310,26 @@ const deletePost = asyncHandler(async (req, res) => {
         // Find the user by ID
         const user = await User.findById(userId);
         if (!user) {
-            console.log("user not found");
+            console.log("User not found");
             throw new ApiError(404, "User not found");
         }
 
         // Find the recipe by ID
         const recipe = await Recipe.findById(recipeId);
         if (!recipe) {
+            console.log("Recipe not found");
             throw new ApiError(404, "Recipe not found");
         }
 
         // Check if the user owns the recipe
         if (recipe.userId.toString() !== userId.toString()) {
+            console.log("User is not authorized to delete this recipe");
             throw new ApiError(403, "User is not authorized to delete this recipe");
         }
 
         // Delete the recipe
-        await recipe.remove();
-        console.log("removerd recipe");
+        await Recipe.findByIdAndDelete(recipeId);
+        console.log("Removed recipe successfully");
 
         return res.status(200).json(
             new ApiResponse(200, {}, "Recipe deleted successfully")
