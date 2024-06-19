@@ -258,5 +258,44 @@ const saveRecipe = asyncHandler(async (req, res) => {
     }
 });
 
+const unsaveRecipe = asyncHandler(async (req, res) => {
+    const { recipeId, userId } = req.body;
+    console.log("Received request to unsave recipe");
 
-export { createPost, updateImage, updateDetails, getAllPost, getUserPost, viewRecipe, getSavedPosts, saveRecipe };
+    if (!recipeId) {
+        console.log("Recipe ID not found");
+        return res.status(400).json(new ApiError(400, "Recipe ID is required"));
+    }
+
+    try {
+        // Find the user by ID
+        const user = await User.findById(userId);
+
+        if (!user) {
+            console.log("No user found");
+            return res.status(404).json(new ApiError(404, "User not found"));
+        }
+
+        // Check if the recipe is saved
+        if (!user.savedRecipe.includes(recipeId)) {
+            console.log("Recipe is not saved");
+            return res.status(400).json(new ApiError(400, "Recipe is not saved"));
+        }
+
+        // Remove the recipe from the savedRecipe array
+        user.savedRecipe = user.savedRecipe.filter(id => id !== recipeId);
+
+        // Save the user document
+        await user.save();
+        console.log("Recipe unsaved successfully");
+        return res.status(200).json(
+            new ApiResponse(200, user.savedRecipe, "Recipe unsaved successfully")
+        );
+    } catch (error) {
+        console.error("Error unsaving recipe:", error);
+        return res.status(500).json(new ApiError(500, "Error unsaving recipe", [error.message]));
+    }
+});
+
+
+export { createPost, updateImage, updateDetails, getAllPost, getUserPost, viewRecipe, getSavedPosts, saveRecipe, unsaveRecipe };
