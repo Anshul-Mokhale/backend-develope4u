@@ -1,16 +1,28 @@
-import mongoose from "mongoose";
-import { DB_NAME } from "../constants.js"; // Ensure this imports the correct database name
+import mysql from 'mysql2/promise';
+
+// Singleton connection instance
+let connection;
 
 const connectDB = async () => {
+    if (connection) {
+        // If a connection already exists, return it
+        console.log('Using existing MySQL connection');
+        return connection;
+    }
+
     try {
-        const mongoURI = `${process.env.MONGODB_URI}/${DB_NAME}`;
-        const mongoconnection = await mongoose.connect(mongoURI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
+        // Create a new connection if it doesn't exist
+        connection = await mysql.createConnection({
+            host: process.env.DB_HOST || 'localhost',
+            user: process.env.DB_USER || 'root',
+            password: process.env.DB_PASSWORD || '',
+            database: process.env.DB_NAME || 'develope4u',
         });
-        console.log(`\nMongoDB Connected: ${mongoconnection.connection.host}`);
+
+        console.log(`MySQL Connected: ${connection.config.host}`);
+        return connection;
     } catch (error) {
-        console.error("MONGODB Connection error", error);
+        console.error('MySQL Connection error', error);
         process.exit(1); // Exit process with failure
     }
 };

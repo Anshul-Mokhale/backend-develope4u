@@ -1,33 +1,24 @@
+import express from 'express';
 import dotenv from 'dotenv';
-dotenv.config();
+import bodyParser from 'body-parser';
+import userRoutes from './routes/user.route.js';
 
-import express from "express";
-import cors from "cors";
-import cookieParser from "cookie-parser";
+dotenv.config(); // Load environment variables
 
+// Create an instance of the Express app
 const app = express();
 
-const corsOptions = {
-    origin: process.env.CORS_ORIGIN || "http://cook-up.netlify.app",
-    credentials: true
-};
+// Middleware
+app.use(bodyParser.json());  // Parse JSON request bodies
 
-app.use(cors(corsOptions));
+// Routes
+app.use('/api/v1/user/', userRoutes);
 
-app.options('*', cors(corsOptions)); // Handle preflight requests
+// Error handling middleware (Optional)
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: 'Something went wrong' });
+});
 
-app.use(express.json({ limit: "16kb" }));
-app.use(express.urlencoded({ extended: true, limit: "16kb" }));
-app.use(express.static("public"));
-app.use(cookieParser());
-
-console.log('CORS_ORIGIN:', process.env.CORS_ORIGIN); // Log to verify the value
-
-// routes import
-import userRouter from './routes/user.routes.js';
-import recipeRouter from './routes/recipe.routes.js';
-
-app.use("/api/v1/users", userRouter);
-app.use("/api/v1/recipe", recipeRouter);
-
+// Export the app instance
 export { app };

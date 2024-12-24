@@ -1,5 +1,5 @@
 {
-  "name": "medical-backend",
+  "name": "develope4u",
   "version": "1.0.0",
   "description": "",
   "type": "module",
@@ -10,7 +10,7 @@
   },
   "keywords": [
     "javascript",
-    "mamta - medical"
+    "develope4u"
   ],
   "author": "Anshul Mokhale",
   "license": "ISC",
@@ -26,9 +26,9 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.4.1",
-    "mongoose-aggregate-paginate-v2": "^1.0.7",
     "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.12.0",
+    "sequelize": "^6.37.5",
     "tesseract.js": "^5.1.0"
   }
 }
