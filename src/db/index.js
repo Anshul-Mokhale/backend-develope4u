@@ -6,7 +6,7 @@ let connection;
 const connectDB = async () => {
     if (connection) {
         // If a connection already exists, return it
-        console.log('Using existing MySQL connection');
+        // console.log('Using existing MySQL connection');
         return connection;
     }
 
