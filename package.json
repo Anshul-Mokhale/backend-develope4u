@@ -5,8 +5,8 @@
   "type": "module",
   "main": "index.js",
 "scripts": {
-  "start": "node --env-file src/.env src/index.js",
-  "dev": "nodemon -r dotenv/config --env-file src/.env --experimental-json-modules src/index.js"
+  "start": "node src/index.js",
+  "dev": "nodemon -r dotenv/config --env-file .env --experimental-json-modules src/index.js"
 },
   "keywords": [
     "javascript",

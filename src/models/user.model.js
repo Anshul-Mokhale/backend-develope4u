@@ -1,9 +1,8 @@
 import connectDB from '../db/index.js';
 import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
-import dotenv from 'dotenv';
-dotenv.config();
 
+// Establish a database connection
 const getConnection = async () => {
     try {
         return await connectDB();
@@ -13,6 +12,7 @@ const getConnection = async () => {
     }
 };
 
+// Generate an access token for a user
 const generateAccessToken = async (id) => {
     try {
         if (!process.env.ACCESS_TOKEN_SECRET || !process.env.ACCESS_TOKEN_EXPIRY) {
@@ -30,6 +30,7 @@ const generateAccessToken = async (id) => {
     }
 };
 
+// Fetch all users from the database
 const getAllUsers = async () => {
     try {
         const connection = await getConnection();
@@ -41,37 +42,40 @@ const getAllUsers = async () => {
     }
 };
 
-const createStudent = async (userData) => {
+// Create a new student user
+const createStudent = async (userData, fileUrl) => {
     try {
         const connection = await getConnection();
         const password = await bcrypt.hash(userData.password, 10);
-
-        const { name, email, phone, user_type, college_name, field_of_study, graduation_year, proof } = userData;
+        if (!fileUrl) {
+            return { file: "no file found" };
+        }
+        const { name, email, phone, user_type, age, college_name, field_of_study, graduation_year } = userData;
         const query = `
-            INSERT INTO users (name, email, phone, password, user_type, college_name, field_of_study, graduation_year, proof) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO users (name, email, phone, password, user_type, age, college_name, field_of_study, graduation_year, proof) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
-        const values = [name, email, phone, password, user_type, college_name, field_of_study, graduation_year, proof];
+        const values = [name, email, phone, password, user_type, age, college_name, field_of_study, graduation_year, fileUrl];
         const [result] = await connection.execute(query, values);
 
-        return { userId: result.insertId, ...userData, password: undefined };
+        return { userId: result.insertId };
     } catch (error) {
         console.error("Error creating student user:", error.message);
         throw new Error("Failed to create student");
     }
 };
 
+// Create a new business user
 const createBusiness = async (userData) => {
     try {
         const connection = await getConnection();
         const password = await bcrypt.hash(userData.password, 10);
-
-        const { name, email, phone, user_type, company_name, company_field } = userData;
+        const { name, email, phone, user_type, age, company_name, company_field } = userData;
         const query = `
-            INSERT INTO users (name, email, phone, password, user_type, company_name, company_field) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO users (name, email, phone, password, user_type, age, company_name, company_field) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `;
-        const values = [name, email, phone, password, user_type, company_name, company_field];
+        const values = [name, email, phone, password, user_type, age, company_name, company_field];
         const [result] = await connection.execute(query, values);
 
         return { userId: result.insertId, ...userData, password: undefined };
@@ -81,12 +85,11 @@ const createBusiness = async (userData) => {
     }
 };
 
+// User login function
 const userLogin = async (userData) => {
     try {
         const connection = await getConnection();
         const { email, password } = userData;
-
-        // Query to fetch the user by email
         const query = `SELECT id, password FROM users WHERE email = ?`;
         const [rows] = await connection.execute(query, [email]);
 
@@ -95,18 +98,13 @@ const userLogin = async (userData) => {
         }
 
         const { id, password: hashedPassword } = rows[0];
-
-        // Compare the provided password with the hashed password in the database
         const isPasswordMatch = await bcrypt.compare(password, hashedPassword);
 
         if (!isPasswordMatch) {
             return { status: 0, message: 'Invalid credentials' };
         }
 
-        // Generate access token
         const token = await generateAccessToken(id);
-
-        // Update the database with the access token
         const updateQuery = `UPDATE users SET access_token = ? WHERE id = ?`;
         const [updateResult] = await connection.execute(updateQuery, [token, id]);
 
@@ -121,4 +119,40 @@ const userLogin = async (userData) => {
     }
 };
 
-export default { getConnection, getAllUsers, createStudent, createBusiness, userLogin };
+// Fetch a user by ID
+const fetchUser = async (id) => {
+    try {
+        const connection = await getConnection();
+        const query = 'SELECT * FROM users WHERE id = ?';
+        const [rows] = await connection.execute(query, [id]);
+        
+        return { status: 1, data: rows, message: 'successful' };
+    } catch (error) {
+        console.error("Error fetching user:", error.message);
+        return { status: 0, message: 'Failed to fetch user' };
+    }
+};
+
+// Update student data by ID
+const updateStudentData = async (id, name) => {
+    try {
+        const connection = await getConnection();
+        if (!id) {
+            return { status: 0, message: "no id found" };
+        }
+
+        const query = 'UPDATE users SET name = ? WHERE id = ?';
+        const [rows] = await connection.execute(query, [name, id]);
+
+        if (rows.affectedRows > 0) {
+            return { status: 1, data: rows, message: "Update successful" };
+        } else {
+            return { status: 0, data: rows, message: "Failed to update: User not found or no changes made" };
+        }
+    } catch (error) {
+        console.error("Error updating user:", error.message);
+        return { status: 0, message: 'Failed to update user' };
+    }
+};
+
+export default { getConnection, getAllUsers, createStudent, createBusiness, userLogin, fetchUser, updateStudentData };

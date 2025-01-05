@@ -7,7 +7,7 @@ import connectDB from './db/index.js';  // Assuming db.js is in the config folde
 import { app } from './app.js';  // Express app instance
 
 // Get the port from environment variables or default to 8000
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8000;
 
 // Connect to MySQL database
 connectDB()

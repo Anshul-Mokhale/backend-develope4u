@@ -7,12 +7,15 @@ dotenv.config(); // Load environment variables
 
 // Create an instance of the Express app
 const app = express();
-
+app.get('/', (req, res) => {
+    res.send('Hello'); 
+});
 // Middleware
 app.use(bodyParser.json());  // Parse JSON request bodies
 
 // Routes
 app.use('/api/v1/user/', userRoutes);
+// app.use('/uploads', express.static('public/uploads'));
 
 // Error handling middleware (Optional)
 app.use((err, req, res, next) => {
