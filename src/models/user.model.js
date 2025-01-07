@@ -50,6 +50,7 @@ const createStudent = async (userData, fileUrl) => {
         if (!fileUrl) {
             return { file: "no file found" };
         }
+        // console.log(userData, fileUrl);
         const { name, email, phone, user_type, age, college_name, field_of_study, graduation_year } = userData;
         const query = `
             INSERT INTO users (name, email, phone, password, user_type, age, college_name, field_of_study, graduation_year, proof) 
@@ -78,7 +79,7 @@ const createBusiness = async (userData) => {
         const values = [name, email, phone, password, user_type, age, company_name, company_field];
         const [result] = await connection.execute(query, values);
 
-        return { userId: result.insertId, ...userData, password: undefined };
+        return { userId: result.insertId, };
     } catch (error) {
         console.error("Error creating business user:", error.message);
         throw new Error("Failed to create business");
@@ -90,18 +91,21 @@ const userLogin = async (userData) => {
     try {
         const connection = await getConnection();
         const { email, password } = userData;
-        const query = `SELECT id, password FROM users WHERE email = ?`;
+        const query = `SELECT id, password,status FROM users WHERE email = ?`;
         const [rows] = await connection.execute(query, [email]);
 
         if (rows.length === 0) {
-            return { status: 0, message: 'User not found' };
+            return { status: 0, message: 'User not found ' };
         }
 
-        const { id, password: hashedPassword } = rows[0];
+        const { id, password: hashedPassword, status } = rows[0];
         const isPasswordMatch = await bcrypt.compare(password, hashedPassword);
 
         if (!isPasswordMatch) {
             return { status: 0, message: 'Invalid credentials' };
+        }
+        if (status != 'active') {
+            return { status: 0, message: 'User is not active' }
         }
 
         const token = await generateAccessToken(id);
@@ -125,7 +129,7 @@ const fetchUser = async (id) => {
         const connection = await getConnection();
         const query = 'SELECT * FROM users WHERE id = ?';
         const [rows] = await connection.execute(query, [id]);
-        
+
         return { status: 1, data: rows, message: 'successful' };
     } catch (error) {
         console.error("Error fetching user:", error.message);
@@ -155,4 +159,4 @@ const updateStudentData = async (id, name) => {
     }
 };
 
-export default { getConnection, getAllUsers, createStudent, createBusiness, userLogin, fetchUser, updateStudentData };
+export default { getConnection, getAllUsers, generateAccessToken, createStudent, createBusiness, userLogin, fetchUser, updateStudentData };
