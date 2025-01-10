@@ -17,7 +17,7 @@ app.use(bodyParser.json());  // Parse JSON request bodies
 // Routes
 app.use('/api/v1/user/', userRoutes);
 app.use('/api/v1/admin/', adminRoutes);
-// app.use('/uploads', express.static('public/uploads'));
+app.use('/uploads', express.static('public/uploads'));
 
 // Error handling middleware (Optional)
 app.use((err, req, res, next) => {
