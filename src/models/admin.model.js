@@ -77,7 +77,7 @@ const fetchData = async () => {
 const changeStatus = async (id, status) => {
     try {
         const connection = await getConnection();
-        const query = `UPDATE users SET status = ? WHERE id = ?`;
+        const query = `UPDATE users SET status = ? WHERE id = ? AND user_type = 'student'`;
         const [rows] = await connection.execute(query, [status, id]);
 
         if (rows.affectedRows === 0) {
@@ -90,4 +90,122 @@ const changeStatus = async (id, status) => {
     }
 }
 
-export default { adminLogin, fetchData, changeStatus };
+const fetchUsers = async (userId) => {
+    try {
+        const connection = await getConnection();
+        const query = `SELECT * FROM users WHERE id = ?`;
+        const [rows] = await connection.execute(query, [userId]);
+        if (rows.length === 0) {
+            return { status: 0, message: 'User not found' };
+        }
+        return { status: 1, data: rows, message: 'Data fetched successfully' };
+    } catch (error) {
+        console.error("Error fetching user:", error.message);
+        throw new Error("Failed to fetch user");
+    }
+}
+
+const fetchUserList = async () => {
+    try {
+        const connection = await getConnection();
+        const query = `SELECT id,name,email,created_at,updated_at FROM users Where user_type = 'student'`;
+        const [rows] = await connection.execute(query);
+        if (rows.length === 0) {
+            return { status: 0, message: 'User not found' };
+        }
+        return { status: 1, data: rows, message: 'Data fetched successfully' };
+    } catch (error) {
+        console.error("Error fetching user:", error.message);
+        throw new Error("Failed to fetch user");
+    }
+}
+
+const deleteUser = async (userId) => {
+    try {
+        const connection = await getConnection();
+        const query = `DELETE FROM users WHERE id = ? AND user_type = 'student'`;
+        const [rows] = await connection.execute(query, [userId]);
+        if (rows.affectedRows === 0) {
+            return { status: 0, message: 'User not found' };
+        }
+        return { status: 1, message: 'User deleted successfully' };
+    } catch (error) {
+        console.error("Error fetching user:", error.message);
+        throw new Error("Failed to fetch user");
+    }
+}
+
+// admin management
+const changeBusinessStatus = async (id, status) => {
+    try {
+        const connection = await getConnection();
+        const query = `UPDATE users SET status = ? WHERE id = ? AND user_type = 'business'`;
+        const [rows] = await connection.execute(query, [status, id]);
+
+        if (rows.affectedRows === 0) {
+            return { status: 0, message: 'Failed to change status' };
+        }
+        return { status: 1, message: 'Status changed successfully' };
+    } catch (error) {
+        console.error("Error logging in user:", error.message);
+        throw new Error("Failed to login user");
+    }
+}
+
+const fetchBusiness = async (userId) => {
+    try {
+        const connection = await getConnection();
+        const query = `SELECT * FROM users WHERE id = ? AND user_type = 'business'`;
+        const [rows] = await connection.execute(query, [userId]);
+        if (rows.length === 0) {
+            return { status: 0, message: 'User not found' };
+        }
+        return { status: 1, data: rows, message: 'Data fetched successfully' };
+    } catch (error) {
+        console.error("Error fetching user:", error.message);
+        throw new Error("Failed to fetch user");
+    }
+}
+
+const fetchBusinessList = async () => {
+    try {
+        const connection = await getConnection();
+        const query = `SELECT id,name,email,created_at,updated_at FROM users Where user_type = 'business'`;
+        const [rows] = await connection.execute(query);
+        if (rows.length === 0) {
+            return { status: 0, message: 'User not found' };
+        }
+        return { status: 1, data: rows, message: 'Data fetched successfully' };
+    } catch (error) {
+        console.error("Error fetching user:", error.message);
+        throw new Error("Failed to fetch user");
+    }
+}
+
+const deleteBusiness = async (userId) => {
+    try {
+        const connection = await getConnection();
+        const query = `DELETE FROM users WHERE id = ? AND user_type = 'business'`;
+        const [rows] = await connection.execute(query, [userId]);
+        if (rows.affectedRows === 0) {
+            return { status: 0, message: 'User not found' };
+        }
+        return { status: 1, message: 'User deleted successfully' };
+    } catch (error) {
+        console.error("Error fetching user:", error.message);
+        throw new Error("Failed to fetch user");
+    }
+}
+
+export default {
+    adminLogin,
+    fetchData,
+    changeStatus,
+    fetchUsers,
+    fetchUserList,
+    deleteUser,
+    changeBusinessStatus,
+    fetchBusiness,
+    fetchBusinessList,
+    deleteBusiness
+};
