@@ -322,6 +322,7 @@ const deleteProject = async (projectId) => {
     }
 }
 
+
 export default {
     adminLogin,
     fetchData,

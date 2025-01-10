@@ -159,4 +159,59 @@ const updateStudentData = async (id, name) => {
     }
 };
 
-export default { getConnection, getAllUsers, generateAccessToken, createStudent, createBusiness, userLogin, fetchUser, updateStudentData };
+const getUserName = async (id) => {
+    try {
+        const connection = await getConnection();
+        const query = 'SELECT name FROM users WHERE id = ?';
+        const [rows] = await connection.execute(query, [id]);
+
+
+        if (rows.length === 0) {
+            return id;
+        }
+        return rows[0].name;
+    } catch (error) {
+        console.error("Error fetching user name:", error.message);
+        return "User";
+    }
+}
+
+const addProjectComment = async (projectId, comment, name) => {
+    try {
+        const connection = await getConnection();
+        const query = `SELECT comment FROM projects WHERE id = ?`;
+        const [rows] = await connection.execute(query, [projectId]);
+
+        let comments = [];
+        if (rows.length > 0 && rows[0].comment) {
+            comments = JSON.parse(rows[0].comment);
+        }
+
+        comments.push({ name, comment });
+
+        const updateQuery = `UPDATE projects SET comment = ? WHERE id = ?`;
+        const [result] = await connection.execute(updateQuery, [JSON.stringify(comments), projectId]);
+
+        if (result.affectedRows === 0) {
+            return { status: 0, message: 'Failed to add comment' };
+        }
+
+        return { status: 1, message: 'Comment added successfully' };
+    } catch (error) {
+        console.error("Error adding comment:", error.message);
+        throw new Error("Failed to add comment");
+    }
+}
+
+export default {
+    getConnection,
+    getAllUsers,
+    generateAccessToken,
+    createStudent,
+    createBusiness,
+    userLogin,
+    fetchUser,
+    updateStudentData,
+    addProjectComment,
+    getUserName
+};

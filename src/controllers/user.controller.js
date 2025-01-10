@@ -1,6 +1,6 @@
 import User from '../models/user.model.js';
-import {ApiError} from "../utils/ApiError.js";
-import {ApiResponse} from "../utils/ApiResponse.js";
+import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 
 const getUsers = async (req, res) => {
     try {
@@ -14,11 +14,11 @@ const getUsers = async (req, res) => {
 
 const addUser = async (req, res, next) => {
     try {
-        const { name, email, phone, user_type, college_name, field_of_study, graduation_year} = req.body;
+        const { name, email, phone, user_type, college_name, field_of_study, graduation_year } = req.body;
         // console.log(req.body);
 
-        if(!name && !email && !phone && !college_name && !field_of_study && !graduation_year){
-            return res.status(404).json({status: 404, message:"all field are required"})
+        if (!name && !email && !phone && !college_name && !field_of_study && !graduation_year) {
+            return res.status(404).json({ status: 404, message: "all field are required" })
         }
 
         if (!user_type) {
@@ -26,12 +26,12 @@ const addUser = async (req, res, next) => {
         }
 
         let insertedUser;
-        
+
         if (user_type == 'student') {
             if (!req.file) {
                 return res.status(400).json({ error: 'No file uploaded' });
             }
-    
+
             const fileUrl = `http://localhost:3000/uploads/${req.file.filename}`;
             // console.log(fileUrl)
             insertedUser = await User.createStudent(req.body, fileUrl);
@@ -57,26 +57,26 @@ const addUser = async (req, res, next) => {
     }
 };
 
-const userLogin = async(req,res)=>{
-    try{
+const userLogin = async (req, res) => {
+    try {
         // const {email,passowrd} = req.body;
         const loggedIn = await User.userLogin(req.body);
         const options = {
             httpOnly: true,
             secure: false
         }
-        if(loggedIn.status==1){
+        if (loggedIn.status == 1) {
             return res
-            .status(200)
-            .cookie("accessToken", loggedIn.accessToken, options)
-            .json(new ApiResponse(200, { accessToken: loggedIn.accessToken }, "User Logged In Successfully"));
-          
-        }else{
+                .status(200)
+                .cookie("accessToken", loggedIn.accessToken, options)
+                .json(new ApiResponse(200, { accessToken: loggedIn.accessToken }, "User Logged In Successfully"));
+
+        } else {
             return res
-            .status(400)
-            .json(400,{message:loggedIn.message})
+                .status(400)
+                .json(400, { message: loggedIn.message })
         }
-    }catch (error) {
+    } catch (error) {
         if (error instanceof ApiError) {
             return next(error);
         }
@@ -149,5 +149,29 @@ const updateStudentData = async (req, res) => {
     }
 };
 
+const addProjectComment = async (req, res) => {
+    try {
+        const id = req.user;
+        if (!id) {
+            return res.status(404).json(404, "Admin verification failed");
+        }
 
-export { getUsers, addUser, userLogin,getUserData,updateStudentData };
+        // const userName = await User.getUserName(id);
+        const name = id.data[0].name;
+        const { projectId, comment } = req.body;
+        const data = await User.addProjectComment(projectId, comment, name);
+        if (data.status == 1) {
+            return res.status(200).json(new ApiResponse(200, data.data, "Comment Added Successfully"));
+        } else {
+            return res.status(400).json(400, { message: data.message });
+        }
+    } catch (error) {
+        if (error instanceof ApiError) {
+            return next(error);
+        }
+        return next(new ApiError(500, error.message || "Failed to add Comment"));
+    }
+};
+
+
+export { getUsers, addUser, userLogin, getUserData, updateStudentData, addProjectComment };
