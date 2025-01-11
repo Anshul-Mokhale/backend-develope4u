@@ -1,13 +1,32 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
+import cors from 'cors'; // Import CORS middleware
 import userRoutes from './routes/user.route.js';
-import adminRoutes from "./routes/admin.route.js";
+import adminRoutes from './routes/admin.route.js';
+import websiteRoutes from './routes/website.route.js';
 
 dotenv.config(); // Load environment variables
 
 // Create an instance of the Express app
 const app = express();
+
+// Middleware to handle CORS
+app.use(
+    cors({
+        origin: '*', // Allow all origins; customize if needed
+        methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
+        allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+    })
+);
+
+// Set custom headers (optional)
+// app.use((req, res, next) => {
+//     res.setHeader('X-Powered-By', 'Develope4u');
+//     next();
+// });
+
+// Root route for the welcome page
 app.get('/', (req, res) => {
     const htmlContent = `
     <!DOCTYPE html>
@@ -123,12 +142,14 @@ app.get('/', (req, res) => {
     `;
     res.send(htmlContent);
 });
+
 // Middleware
-app.use(bodyParser.json());  // Parse JSON request bodies
+app.use(bodyParser.json()); // Parse JSON request bodies
 
 // Routes
 app.use('/api/v1/user/', userRoutes);
 app.use('/api/v1/admin/', adminRoutes);
+app.use('/api/v1/website/', websiteRoutes);
 app.use('/uploads', express.static('public/uploads'));
 
 // Error handling middleware (Optional)
