@@ -2,13 +2,16 @@ import connectDB from '../db/index.js';
 import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
 
-// Establish a database connection
-const getConnection = async () => {
+const SALT_ROUNDS = 10;
+
+// Helper to execute queries
+const executeQuery = async (query, values) => {
+    const pool = await connectDB(); // Get the connection pool
     try {
-        return await connectDB();
+        return await pool.execute(query, values); // Use pool.execute to run queries
     } catch (error) {
-        console.error("Error establishing database connection:", error.message);
-        throw new Error("Database connection failed");
+        console.error("Error executing query:", error.message);
+        throw new Error("Database query failed");
     }
 };
 
@@ -33,8 +36,8 @@ const generateAccessToken = async (id) => {
 // Fetch all users from the database
 const getAllUsers = async () => {
     try {
-        const connection = await getConnection();
-        const [rows] = await connection.execute('SELECT * FROM users');
+        const query = 'SELECT * FROM users';
+        const [rows] = await executeQuery(query);
         return rows;
     } catch (error) {
         console.error("Error fetching all users:", error.message);
@@ -44,21 +47,19 @@ const getAllUsers = async () => {
 
 // Create a new student user
 const createStudent = async (userData, fileUrl) => {
+    if (!fileUrl) return { file: "No file found" };
+
     try {
-        const connection = await getConnection();
-        const password = await bcrypt.hash(userData.password, 10);
-        if (!fileUrl) {
-            return { file: "no file found" };
-        }
-        // console.log(userData, fileUrl);
+        const password = await bcrypt.hash(userData.password, SALT_ROUNDS);
         const { name, email, phone, user_type, age, college_name, field_of_study, graduation_year } = userData;
+
         const query = `
             INSERT INTO users (name, email, phone, password, user_type, age, college_name, field_of_study, graduation_year, proof) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         const values = [name, email, phone, password, user_type, age, college_name, field_of_study, graduation_year, fileUrl];
-        const [result] = await connection.execute(query, values);
 
+        const [result] = await executeQuery(query, values);
         return { userId: result.insertId };
     } catch (error) {
         console.error("Error creating student user:", error.message);
@@ -69,17 +70,17 @@ const createStudent = async (userData, fileUrl) => {
 // Create a new business user
 const createBusiness = async (userData) => {
     try {
-        const connection = await getConnection();
-        const password = await bcrypt.hash(userData.password, 10);
+        const password = await bcrypt.hash(userData.password, SALT_ROUNDS);
         const { name, email, phone, user_type, age, company_name, company_field } = userData;
+
         const query = `
             INSERT INTO users (name, email, phone, password, user_type, age, company_name, company_field) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `;
         const values = [name, email, phone, password, user_type, age, company_name, company_field];
-        const [result] = await connection.execute(query, values);
 
-        return { userId: result.insertId, };
+        const [result] = await executeQuery(query, values);
+        return { userId: result.insertId };
     } catch (error) {
         console.error("Error creating business user:", error.message);
         throw new Error("Failed to create business");
@@ -89,28 +90,28 @@ const createBusiness = async (userData) => {
 // User login function
 const userLogin = async (userData) => {
     try {
-        const connection = await getConnection();
         const { email, password } = userData;
-        const query = `SELECT id, password,status FROM users WHERE email = ?`;
-        const [rows] = await connection.execute(query, [email]);
+
+        const query = `SELECT id, password, status FROM users WHERE email = ?`;
+        const [rows] = await executeQuery(query, [email]);
 
         if (rows.length === 0) {
-            return { status: 0, message: 'User not found ' };
+            return { status: 0, message: 'User not found' };
         }
 
         const { id, password: hashedPassword, status } = rows[0];
-        const isPasswordMatch = await bcrypt.compare(password, hashedPassword);
+        if (status !== 'active') {
+            return { status: 0, message: 'User is not active' };
+        }
 
+        const isPasswordMatch = await bcrypt.compare(password, hashedPassword);
         if (!isPasswordMatch) {
             return { status: 0, message: 'Invalid credentials' };
-        }
-        if (status != 'active') {
-            return { status: 0, message: 'User is not active' }
         }
 
         const token = await generateAccessToken(id);
         const updateQuery = `UPDATE users SET access_token = ? WHERE id = ?`;
-        const [updateResult] = await connection.execute(updateQuery, [token, id]);
+        const [updateResult] = await executeQuery(updateQuery, [token, id]);
 
         if (updateResult.affectedRows === 0) {
             return { status: 0, message: 'Failed to update access token' };
@@ -119,18 +120,17 @@ const userLogin = async (userData) => {
         return { status: 1, message: 'Login successful', accessToken: token };
     } catch (error) {
         console.error('Error during user login:', error.message);
-        return { status: 0, message: 'Failed to log in' };
+        return { status: 0, message: 'An error occurred during login' };
     }
 };
 
 // Fetch a user by ID
 const fetchUser = async (id) => {
     try {
-        const connection = await getConnection();
         const query = 'SELECT * FROM users WHERE id = ?';
-        const [rows] = await connection.execute(query, [id]);
+        const [rows] = await executeQuery(query, [id]);
 
-        return { status: 1, data: rows, message: 'successful' };
+        return { status: 1, data: rows, message: 'Successful' };
     } catch (error) {
         console.error("Error fetching user:", error.message);
         return { status: 0, message: 'Failed to fetch user' };
@@ -139,14 +139,11 @@ const fetchUser = async (id) => {
 
 // Update student data by ID
 const updateStudentData = async (id, name) => {
-    try {
-        const connection = await getConnection();
-        if (!id) {
-            return { status: 0, message: "no id found" };
-        }
+    if (!id) return { status: 0, message: "No ID found" };
 
+    try {
         const query = 'UPDATE users SET name = ? WHERE id = ?';
-        const [rows] = await connection.execute(query, [name, id]);
+        const [rows] = await executeQuery(query, [name, id]);
 
         if (rows.affectedRows > 0) {
             return { status: 1, data: rows, message: "Update successful" };
@@ -159,28 +156,11 @@ const updateStudentData = async (id, name) => {
     }
 };
 
-const getUserName = async (id) => {
-    try {
-        const connection = await getConnection();
-        const query = 'SELECT name FROM users WHERE id = ?';
-        const [rows] = await connection.execute(query, [id]);
-
-
-        if (rows.length === 0) {
-            return id;
-        }
-        return rows[0].name;
-    } catch (error) {
-        console.error("Error fetching user name:", error.message);
-        return "User";
-    }
-}
-
+// Add a project comment
 const addProjectComment = async (projectId, comment, name) => {
     try {
-        const connection = await getConnection();
         const query = `SELECT comment FROM projects WHERE id = ?`;
-        const [rows] = await connection.execute(query, [projectId]);
+        const [rows] = await executeQuery(query, [projectId]);
 
         let comments = [];
         if (rows.length > 0 && rows[0].comment) {
@@ -190,7 +170,7 @@ const addProjectComment = async (projectId, comment, name) => {
         comments.push({ name, comment });
 
         const updateQuery = `UPDATE projects SET comment = ? WHERE id = ?`;
-        const [result] = await connection.execute(updateQuery, [JSON.stringify(comments), projectId]);
+        const [result] = await executeQuery(updateQuery, [JSON.stringify(comments), projectId]);
 
         if (result.affectedRows === 0) {
             return { status: 0, message: 'Failed to add comment' };
@@ -201,12 +181,24 @@ const addProjectComment = async (projectId, comment, name) => {
         console.error("Error adding comment:", error.message);
         throw new Error("Failed to add comment");
     }
-}
+};
+
+// Get user name by ID
+const getUserName = async (id) => {
+    try {
+        const query = 'SELECT name FROM users WHERE id = ?';
+        const [rows] = await executeQuery(query, [id]);
+
+        return rows.length === 0 ? id : rows[0].name;
+    } catch (error) {
+        console.error("Error fetching user name:", error.message);
+        return "User";
+    }
+};
 
 export default {
-    getConnection,
-    getAllUsers,
     generateAccessToken,
+    getAllUsers,
     createStudent,
     createBusiness,
     userLogin,

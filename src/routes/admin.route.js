@@ -17,7 +17,8 @@ import {
     updateProject,
     updateThumbnail,
     updateScreenshot,
-    deleteProject
+    deleteProject,
+    logoutAdmin
 } from '../controllers/admin.controller.js';
 import { upload } from '../middlewares/multer.middlewares.js';
 
@@ -45,5 +46,7 @@ router.route('/update-project').post(verifyJWT, updateProject);
 router.route('/update-thumbnail').post(verifyJWT, upload.single('thumbnail'), updateThumbnail);
 router.route('/update-screenshot').post(verifyJWT, upload.array('screenshot', 5), updateScreenshot);
 router.route('/delete-project').post(verifyJWT, deleteProject);
+
+router.route('/logout').post(verifyJWT, logoutAdmin);
 
 export default router;

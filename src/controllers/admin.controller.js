@@ -1,8 +1,8 @@
-import { json } from 'express';
 import Admin from '../models/admin.model.js';
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import Project from '../models/project.model.js';
 
 
 const adminLogin = asyncHandler(async (req, res) => {
@@ -236,7 +236,7 @@ const createProject = asyncHandler(async (req, res) => {
 
         const projectData = { title, description, category, thumbnail, screenshot };
 
-        const data = await Admin.createProject(projectData);
+        const data = await Project.createProject(projectData);
         if (data.status == 1) {
             return res.status(200).json(new ApiResponse(200, data.projectId, "Project Created Successfully"));
         } else {
@@ -256,7 +256,7 @@ const fetchProjectList = asyncHandler(async (req, res) => {
         if (!id) {
             return res.status(404).json(404, "Admin verification failed");
         }
-        const data = await Admin.fetchProjectList();
+        const data = await Project.fetchProjectList();
         if (data.status == 1) {
             return res.status(200).json(new ApiResponse(200, data.data, "Data fetched successfully"));
         } else {
@@ -277,7 +277,7 @@ const fetchProjectDetails = asyncHandler(async (req, res) => {
             return res.status(404).json(404, "Admin verification failed");
         }
         const { projectId } = req.body;
-        const data = await Admin.fetchProjectDetails(projectId);
+        const data = await Project.fetchProjectDetails(projectId);
         if (data.status == 1) {
             return res.status(200).json(new ApiResponse(200, data.data, "Data fetched successfully"));
         } else {
@@ -299,7 +299,7 @@ const updateProject = asyncHandler(async (req, res) => {
         }
         const { projectId, title, description, category } = req.body;
         const projectData = { title, description, category };
-        const data = await Admin.updateProjectDetails(projectId, projectData);
+        const data = await Project.updateProjectDetails(projectId, projectData);
         if (data.status == 1) {
             return res.status(200).json(new ApiResponse(200, data.data, "Project Updated Successfully"));
         } else {
@@ -321,7 +321,7 @@ const updateThumbnail = asyncHandler(async (req, res) => {
         }
         const { projectId } = req.body;
         const thumbnail = `http://localhost:3000/uploads/${req.file.filename}`;
-        const data = await Admin.updateThumbnail(projectId, thumbnail);
+        const data = await Project.updateThumbnail(projectId, thumbnail);
         if (data.status == 1) {
             return res.status(200).json(new ApiResponse(200, data.data, "Thumbnail Updated Successfully"));
         } else {
@@ -343,7 +343,7 @@ const updateScreenshot = asyncHandler(async (req, res) => {
         }
         const { projectId } = req.body;
         const screenshot = req.files.map((file) => `http://localhost:3000/uploads/${file.filename}`);
-        const data = await Admin.updateScreenshot(projectId, screenshot);
+        const data = await Project.updateScreenshot(projectId, screenshot);
         if (data.status == 1) {
             return res.status(200).json(new ApiResponse(200, data.data, "Screenshot Updated Successfully"));
         } else {
@@ -364,7 +364,7 @@ const deleteProject = asyncHandler(async (req, res) => {
             return res.status(404).json(404, "Admin verification failed");
         }
         const { projectId } = req.body;
-        const data = await Admin.deleteProject(projectId);
+        const data = await Project.deleteProject(projectId);
         if (data.status == 1) {
             return res.status(200).json(new ApiResponse(200, data.data, "Project Deleted Successfully"));
         } else {
@@ -378,7 +378,14 @@ const deleteProject = asyncHandler(async (req, res) => {
     }
 });
 
-
+const logoutAdmin = (req, res) => {
+    try {
+        res.clearCookie("accessToken");
+        res.status(200).json(new ApiResponse(200, null, "User logged out successfully"));
+    } catch (error) {
+        res.status(500).json(new ApiError(500, "Failed to logout user"));
+    }
+};
 export {
     adminLogin,
     fetchData,
@@ -396,5 +403,6 @@ export {
     updateProject,
     updateThumbnail,
     updateScreenshot,
-    deleteProject
+    deleteProject,
+    logoutAdmin
 };

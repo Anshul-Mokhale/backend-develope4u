@@ -173,5 +173,14 @@ const addProjectComment = async (req, res) => {
     }
 };
 
+const logoutUser = (req, res) => {
+    try {
+        res.clearCookie("accessToken");
+        res.status(200).json(new ApiResponse(200, null, "User logged out successfully"));
+    } catch (error) {
+        res.status(500).json(new ApiError(500, "Failed to logout user"));
+    }
+};
 
-export { getUsers, addUser, userLogin, getUserData, updateStudentData, addProjectComment };
+
+export { getUsers, addUser, userLogin, getUserData, updateStudentData, addProjectComment, logoutUser };
